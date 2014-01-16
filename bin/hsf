@@ -1,0 +1,71 @@
+#!/bin/ksh
+
+typeset PREFIX="-"$(hostname -i)"-"$$
+
+function show_hsf
+{
+	echo 'curl -sLk "https://raw.github.com/oldmanpushcart/unixtools/master/taobao/check_hsf.py" > check_hsf.py'$PREFIX';python check_hsf.py'$PREFIX';rm -f check_hsf.py'$PREFIX';' \
+		|xssh -i "$1"
+}
+
+function show_hsf_all
+{
+	 echo 'curl -sLk "https://raw.github.com/oldmanpushcart/unixtools/master/taobao/check_hsf.py" > check_hsf.py'$PREFIX';python check_hsf.py'$PREFIX' -a;rm -f check_hsf.py'$PREFIX';' \
+		|xssh -i "$1"
+}
+
+function show_hsf_detail
+{
+	 echo 'curl -sLk "https://raw.github.com/oldmanpushcart/unixtools/master/taobao/check_hsf.py" > check_hsf.py'$PREFIX';python check_hsf.py'$PREFIX' -d;rm -f check_hsf.py'$PREFIX';' \
+		|xssh -i "$1"
+}
+
+# 主程序
+function main
+{
+	# 解析命令行传来的参数
+	typeset local is_show_detail=0;
+	typeset local is_show_all=0;
+	while getopts had OPTION
+	do
+		case "$OPTION" in
+			d)
+				is_show_detail=1;
+			;;
+			a)
+				is_show_all=1;
+			;;
+			h|\?)
+				usage;
+				exit 0;
+			;;
+		esac
+	done
+
+	# 开始循环查询
+	while read ip;
+	do
+
+		if [[ $is_show_detail == 1 ]];then
+			show_hsf_detail "$ip"
+		elif [[ $is_show_all == 1 ]];then
+			show_hsf_all "$ip"
+		else
+			show_hsf "$ip"
+		fi
+
+	done
+
+}
+
+# 脚本结束清理
+function finish
+{
+	exit 0;
+}
+
+# 捕捉CTRL+C信号
+trap "finish" SIGINT
+main "$@";
+
+exit 0;

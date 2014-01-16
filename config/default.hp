@@ -1,0 +1,199 @@
+# $HOME/.hostprofile/hostprofile.conf
+# 
+# author : dukun@taobao.com
+# 
+# <列id>.<列属性>=<列属性值>
+# 
+# xxx称为列id，列得所有必填项必须填写，否则默认会被忽略
+# 
+# 必填项
+#   xxx.lab=列名
+#   xxx.idx=列排序。格式col-subcol,如a-1,a-2将会被合并为a1/2
+#   xxx.wid=列宽度
+#   xxx.cmd=执行命令
+#   xxx.dsc=列值解释
+# 选填项
+#   xxx.lmt.up=告警阀值上限，超过上限则告警！内容为数值，也可以为另一列的列id。
+#   xxx.lmt.dw=告警阀值下限，低于下限则告警！内容为数值，也可以为另一列的列id。
+#   xxx.lmt.rx=告警阀值正则表达式；满足正则表达式的值内容立即告警！
+#   xxx.info.color=INFO级别的文字颜色，颜色定义：30黑,31红,32绿,33黄,34蓝,35紫,36青,37灰。
+#   xxx.warn.color=WARN级别的文字颜色，颜色定义同上。
+
+
+# IP地址
+ip.lab=IP
+ip.idx=a1
+ip.wid=16
+ip.cmd=hostname -i
+ip.dsc=主机IP地址
+ip.info.color=36
+
+# Load
+load.lab=LD
+load.wid=5
+load.idx=a2-1
+#load.lmt.up=cpu_count
+load.cmd=uptime|grep -Eo "load average:.*"|awk -F",|:" '{printf("%0.2f\n",$2);}'
+load.dsc=主机LOAD
+
+# Cpu Count
+cpu_count.lab=CC
+cpu_count.idx=a2-2
+cpu_count.wid=4
+cpu_count.cmd=cat /proc/cpuinfo|grep processor|wc -l
+cpu_count.dsc=主机处理器个数
+cpu_count.info.color=33
+
+# Java Thread Count
+jtc.lab=JTC
+jtc.idx=a3
+jtc.wid=6
+jtc.cmd=ps -ef | grep java|grep ".default"|grep -v grep|awk '{print $2}'|xargs -I{} ls /proc/{}/task|wc -l
+jtc.dsc=Java线程数
+jtc.lmt.up=550
+
+# MySQL connect count
+#db_conn.lab=DBCC
+#db_conn.wid=6
+#db_conn.idx=a4
+#db_conn.cmd=netstat -an|awk '$5~/:3306$/&&$6~/ESTABLISHED/'|wc -l
+#db_conn.dsc=MySQL连接数量
+
+# HTTP connect count
+#http_conn.lab=HTCC
+#http_conn.wid=6
+#http_conn.idx=a5
+#http_conn.cmd=netstat -an|awk '$5~/:80$/&&$6~/ESTABLISHED/'|wc -l
+#http_conn.dsc=HTTP连接数量
+
+# CMS GC Times
+cms_times.lab=GC:t
+cms_times.idx=a6-1
+cms_times.wid=4
+cms_times.cmd=date +%Y-%m-%d|xargs -I{} grep -hE {} /home/admin/logs/gc.log* 2>/dev/null|grep "CMS-initial-mark: "|awk -F "T" '{print $1}'|wc -l
+cms_times.dsc=当天CMS GC次数
+cms_times.lmt.up=y_cms_times
+
+# Yesterday CMS GC Times
+y_cms_times.lab=GC:y
+y_cms_times.idx=a6-2
+y_cms_times.wid=4
+y_cms_times.cmd=date -d last-day +%Y-%m-%d|xargs -I{} grep -hE {} /home/admin/logs/gc.log* 2>/dev/null|grep "CMS-initial-mark: "|awk -F "T" '{print $1}'|wc -l
+y_cms_times.dsc=昨天CMS GC次数
+y_cms_times.info.color=33
+
+
+# sar-%usr
+vmstat_us.lab=SAR:us
+vmstat_us.idx=a8-2
+vmstat_us.wid=8
+vmstat_us.cmd=export LANG=en_US;sar|tail -2|grep -v Aver|awk '{print $4}'
+vmstat_us.dsc=sar's %usr
+vmstat_us.lmt.up=20
+vmstat_us.warn.color=31
+
+# sar-%system
+vmstat_sy.lab=SAR:sy
+vmstat_sy.idx=a8-3
+vmstat_sy.wid=8
+vmstat_sy.cmd=export LANG=en_US;sar|tail -2|grep -v Aver|awk '{print $6}'
+vmstat_sy.dsc=sar's system
+vmstat_sy.lmt.up=20
+vmstat_sy.warn.color=31
+
+# sar-%iowait
+vmstat_wa.lab=SAR:wa
+vmstat_wa.idx=a8-4
+vmstat_wa.wid=8
+vmstat_wa.cmd=export LANG=en_US;sar|tail -2|grep -v Aver|awk '{print $7}'
+vmstat_wa.dsc=sar's iowait
+vmstat_wa.lmt.up=10
+vmstat_wa.warn.color=31
+
+# vmstat-bi
+vmstat_bi.lab=DISK:i
+vmstat_bi.idx=b31-1
+vmstat_bi.wid=7
+vmstat_bi.cmd=vmstat|awk '$1!="procs"&&$1!="r"'|awk '{print $9}'
+vmstat_bi.dsc=vmstat's bi
+
+# vmstat-bo
+vmstat_bo.lab=DISK:o
+vmstat_bo.idx=b31-2
+vmstat_bo.wid=7
+vmstat_bo.cmd=vmstat|awk '$1!="procs"&&$1!="r"'|awk '{print $10}'
+vmstat_bo.dsc=vmstat's bo
+
+# df -h
+df_u.lab=DISK:u
+df_u.idx=b31-3
+df_u.wid=5
+df_u.cmd=df -h|grep "/home"|awk '{print $5}'
+df_u.dsc=disk (/home) space used
+
+
+
+# free-m-used
+free_used.lab=MEM:u
+free_used.idx=b4-1
+free_used.wid=5
+free_used.cmd=free -m|awk '$1=="Mem:"{print $3}'
+free_used.dsc=mem used
+
+# free-m-total
+free_total.lab=MEM:t
+free_total.idx=b4-2
+free_total.wid=6
+free_total.cmd=free -m|awk '$1=="Mem:"{print $2}'
+free_total.dsc=mem total
+
+# net-i
+net_in.lab=NET:i
+net_in.idx=b5-1
+net_in.wid=7
+net_in.cmd=tsar --traffic|grep -E "^[0-9]{2}/[0-9]{2}/[0-9]{2}\-[0-9]{2}:[0-9]{2}"|tail -1|awk '{print $2}'
+net_in.dsc=network in
+
+# net-o
+net_out.lab=NET:o
+net_out.idx=b5-2
+net_out.wid=8
+net_out.cmd=tsar --traffic|grep -E "^[0-9]{2}/[0-9]{2}/[0-9]{2}\-[0-9]{2}:[0-9]{2}"|tail -1|awk '{print $2}'
+net_out.dsc=network out
+
+# pgpg:in
+pgpg_in.lab=PGPG:i
+pgpg_in.idx=b51-1
+pgpg_in.wid=8
+pgpg_in.cmd=export LANG=en_US;sar -B|tail -2|grep -v Aver|awk '{print $3}'
+pgpg_in.dsc=sar's pgpgin
+
+# pgpg:out
+pgpg_out.lab=PGPG:o
+pgpg_out.idx=b51-2
+pgpg_out.wid=8
+pgpg_out.cmd=export LANG=en_US;sar -B|tail -2|grep -v Aver|awk '{print $4}'
+pgpg_out.dsc=sar's pgpgout
+
+# pgpg:fault
+pgpg_fault.lab=PGPG:f
+pgpg_fault.idx=b51-3
+pgpg_fault.wid=8
+pgpg_fault.cmd=export LANG=en_US;sar -B|tail -2|grep -v Aver|awk '{print $5}'
+pgpg_fault.dsc=sar's pgpgfault
+
+# hsf-provider
+hsf_provider.lab=HSF:p
+hsf_provider.idx=b6-1
+hsf_provider.wid=8
+hsf_provider.cmd=cat /home/admin/logs/monitor/monitor-app-org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader.log|awk 'BEGIN{RS="\02";FS="\01";} $1=="HSF-ProviderDetail" {m[$7]+=$5}END{for(i in m)printf("%s\t%s\n",i,m[i])}'|sort -k2|tail -1|awk '{print $3}'
+hsf_provider.dsc=HSF Provider QPS
+
+
+# hsf-consumer
+hsf_consumer.lab=HSF:c
+hsf_consumer.idx=b6-2
+hsf_consumer.wid=8
+hsf_consumer.cmd=cat /home/admin/logs/monitor/monitor-app-org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader.log|awk 'BEGIN{RS="\02";FS="\01";} $1=="HSF-ConsumerDetail" {m[$7]+=$5}END{for(i in m)printf("%s\t%s\n",i,m[i])}'|sort -k2|tail -1|awk '{print $3}'
+hsf_consumer.dsc=HSF Consumer QPS
+
